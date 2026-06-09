@@ -1,0 +1,109 @@
+# =====================================================================
+# Labo Santé — docker-compose (Session 1 : bases + UIs d'administration)
+# Démarre PostgreSQL, MongoDB et leurs interfaces web + Portainer.
+# Le service `ingestor` sera ajouté en Session 2.
+# =====================================================================
+
+services:
+
+  # ----- Base relationnelle -----
+  postgres:
+    image: postgres:15-alpine
+    container_name: labo-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER:     ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB:       ${POSTGRES_DB}
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      # Le script SQL est exécuté UNE seule fois, au premier démarrage,
+      # quand le volume pgdata est vide.
+      - ./sql/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+    healthcheck:
+      test:     ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout:  3s
+      retries:  10
+    networks: [labnet]
+
+  # ----- Base documentaire -----
+  mongo:
+    image: mongo:7
+    container_name: labo-mongo
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USER}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
+      MONGO_INITDB_DATABASE:      ${MONGO_DB}
+    ports:
+      - "127.0.0.1:27017:27017"
+    volumes:
+      - mongodata:/data/db
+    healthcheck:
+      test:     ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 5s
+      timeout:  3s
+      retries:  10
+    networks: [labnet]
+
+  # ----- UI Postgres -----
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: labo-pgadmin
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL:    ${PGADMIN_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD}
+      PGADMIN_CONFIG_SERVER_MODE: "False"
+    ports:
+      - "127.0.0.1:5050:80"
+    volumes:
+      - pgadmin:/var/lib/pgadmin
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks: [labnet]
+
+  # ----- UI Mongo -----
+  mongo-express:
+    image: mongo-express:1
+    container_name: labo-mongo-express
+    restart: unless-stopped
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: ${MONGO_USER}
+      ME_CONFIG_MONGODB_ADMINPASSWORD: ${MONGO_PASSWORD}
+      ME_CONFIG_MONGODB_URL:           mongodb://${MONGO_USER}:${MONGO_PASSWORD}@mongo:27017/
+      ME_CONFIG_BASICAUTH_USERNAME:    ${MEX_USER}
+      ME_CONFIG_BASICAUTH_PASSWORD:    ${MEX_PASSWORD}
+    ports:
+      - "127.0.0.1:8081:8081"
+    depends_on:
+      mongo:
+        condition: service_healthy
+    networks: [labnet]
+
+  # ----- Monitoring Docker -----
+  portainer:
+    image: portainer/portainer-ce:latest
+    container_name: labo-portainer
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:9000:9000"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - portainer:/data
+    networks: [labnet]
+
+# ---------------------------------------------------------------------
+volumes:
+  pgdata:
+  mongodata:
+  pgadmin:
+  portainer:
+
+networks:
+  labnet:
+    driver: bridge
