@@ -1,0 +1,68 @@
+// ============================================================
+// Labo Santé — Schéma dbdiagram.io (DBML)
+// Coller sur https://dbdiagram.io/d  pour générer le visuel
+// puis Export > PNG/PDF/SVG  → livrable "schema SQL"
+// ============================================================
+
+Table medecins {
+  id              int           [pk, increment]
+  nom             varchar(80)   [not null]
+  prenom          varchar(80)   [not null]
+  specialite      varchar(120)  [not null]
+  email           varchar(160)  [unique]
+  telephone       varchar(20)
+  created_at      timestamptz   [not null, default: `now()`]
+}
+
+Table patients {
+  id              int           [pk, increment]
+  nom             varchar(80)   [not null]
+  prenom          varchar(80)   [not null]
+  date_naissance  date          [not null]
+  sexe            char(1)       [not null, note: "M | F | X"]
+  email           varchar(160)  [unique]
+  telephone       varchar(20)
+  adresse         text
+  created_at      timestamptz   [not null, default: `now()`]
+}
+
+Table medicaments {
+  id              int           [pk, increment]
+  nom_commercial  varchar(160)  [not null]
+  dci             varchar(160)  [not null]
+  dosage          varchar(60)   [not null]
+  forme           varchar(60)   [not null]
+  laboratoire     varchar(120)
+
+  Indexes {
+    (nom_commercial, dosage, forme) [unique]
+    dci
+  }
+}
+
+Table prescriptions {
+  id                int          [pk, increment]
+  patient_id        int          [not null, ref: > patients.id]
+  medecin_id        int          [not null, ref: > medecins.id]
+  date_prescription date         [not null, default: `CURRENT_DATE`]
+  notes             text
+  created_at        timestamptz  [not null, default: `now()`]
+
+  Indexes {
+    patient_id
+    medecin_id
+    date_prescription
+  }
+}
+
+// Table de liaison N-N
+Table prescription_medicaments {
+  prescription_id int           [not null, ref: > prescriptions.id]
+  medicament_id   int           [not null, ref: > medicaments.id]
+  posologie       varchar(200)  [not null]
+  duree_jours     int           [not null, note: "> 0"]
+
+  Indexes {
+    (prescription_id, medicament_id) [pk]
+  }
+}
