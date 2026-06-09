@@ -1,0 +1,20 @@
+# Secrets — NE PAS COMMITER
+.env
+*.env.local
+
+# Python (Session 2)
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+
+# Données générées / dumps locaux
+data/
+*.dump
+*.sql.gz
+
+# Éditeurs
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
