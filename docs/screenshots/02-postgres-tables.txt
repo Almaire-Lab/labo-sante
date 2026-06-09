@@ -1,0 +1,10 @@
+                   List of relations
+ Schema |           Name           | Type  |   Owner   
+--------+--------------------------+-------+-----------
+ public | medecins                 | table | lab_admin
+ public | medicaments              | table | lab_admin
+ public | patients                 | table | lab_admin
+ public | prescription_medicaments | table | lab_admin
+ public | prescriptions            | table | lab_admin
+(5 rows)
+

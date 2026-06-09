@@ -1,0 +1,6 @@
+NAME                 CPU %     MEM USAGE / LIMIT     NET I/O          BLOCK I/O
+labo-pgadmin         0.11%     261.9MiB / 7.669GiB   238kB / 17.4MB   0B / 19.9MB
+labo-mongo-express   0.00%     44.2MiB / 7.669GiB    331kB / 768kB    0B / 0B
+labo-postgres        0.00%     37.11MiB / 7.669GiB   122kB / 26.6kB   0B / 54.4MB
+labo-portainer       0.00%     22.14MiB / 7.669GiB   302kB / 356kB    0B / 0B
+labo-mongo           1.01%     181MiB / 7.669GiB     26.4kB / 261kB   0B / 3.1MB

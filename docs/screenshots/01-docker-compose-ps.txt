@@ -1,0 +1,6 @@
+NAME                 IMAGE                           COMMAND                  SERVICE         CREATED              STATUS                   PORTS
+labo-mongo           mongo:7                         "docker-entrypoint.sΓÇª"   mongo           2 minutes ago        Up 2 minutes (healthy)   127.0.0.1:27017->27017/tcp
+labo-mongo-express   mongo-express:1                 "/sbin/tini -- /dockΓÇª"   mongo-express   2 minutes ago        Up 2 minutes             127.0.0.1:8081->8081/tcp
+labo-pgadmin         dpage/pgadmin4:latest           "/entrypoint.sh"         pgadmin         About a minute ago   Up About a minute        127.0.0.1:5050->80/tcp
+labo-portainer       portainer/portainer-ce:latest   "/portainer"             portainer       2 minutes ago        Up 2 minutes             127.0.0.1:9000->9000/tcp
+labo-postgres        postgres:15-alpine              "docker-entrypoint.sΓÇª"   postgres        2 minutes ago        Up 2 minutes (healthy)   127.0.0.1:5432->5432/tcp
