@@ -1,0 +1,53 @@
+{
+  "_comment": "Schéma logique du document `consultations` (MongoDB). Pas de validation stricte volontairement : la souplesse du document est l'argument NoSQL ici. patient_id et medecin_id assurent le lien applicatif avec PostgreSQL.",
+
+  "collection": "consultations",
+  "exemple_document": {
+    "_id": "ObjectId('64f...')",
+    "patient_id": 1428,
+    "medecin_id": 12,
+    "date": "2026-06-09T09:30:00Z",
+    "motif": "Toux persistante depuis 10 jours",
+    "symptoms": [
+      { "label": "toux sèche",        "duree_jours": 10, "intensite": "moderee" },
+      { "label": "fièvre",            "duree_jours": 3,  "temperature_c": 38.4 },
+      { "label": "douleur thoracique", "intensite": "legere" }
+    ],
+    "diagnosis": {
+      "primary":   { "code_cim10": "J20.9", "label": "Bronchite aiguë" },
+      "secondary": [
+        { "code_cim10": "R05",   "label": "Toux" }
+      ],
+      "severity":  "moderee",
+      "confidence": 0.82
+    },
+    "antecedents_pertinents": ["asthme léger 2019"],
+    "notes": "Auscultation : râles bronchiques bilatéraux. Pas de signe de gravité.",
+    "examens_demandes": ["NFS", "CRP"],
+    "attachments": [
+      { "type": "audio", "filename": "auscult.wav", "url": "s3://lab/2026/06/09/abc.wav" }
+    ],
+    "created_at": "2026-06-09T09:42:11Z"
+  },
+
+  "champs_recommandes": {
+    "patient_id":  "int, OBLIGATOIRE — lien vers patients.id (PostgreSQL)",
+    "medecin_id":  "int, OBLIGATOIRE — lien vers medecins.id (PostgreSQL)",
+    "date":        "ISODate, OBLIGATOIRE",
+    "symptoms":    "array<object>, longueur variable",
+    "diagnosis":   "object imbriqué, structure variable"
+  },
+
+  "index_recommandes": [
+    { "champ": "patient_id",                "type": "ASC" },
+    { "champ": "date",                      "type": "DESC" },
+    { "champ": "diagnosis.primary.code_cim10", "type": "ASC" }
+  ],
+
+  "justification_NoSQL": [
+    "symptoms et diagnosis ont une longueur et une structure variables (impossible à modéliser proprement en SQL sans 5+ tables)",
+    "pas de jointure complexe nécessaire sur ce document",
+    "patient_id assure le lien logique avec PostgreSQL (jointure applicative côté ingestor / API)",
+    "évolution facile du modèle : ajouter `examens_demandes` ou `attachments` ne nécessite pas de migration"
+  ]
+}
