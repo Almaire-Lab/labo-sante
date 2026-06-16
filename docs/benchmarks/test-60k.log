@@ -1,0 +1,26 @@
+ Container labo-mongo Running 
+ Container labo-postgres Running 
+ Container labo-mongo Waiting 
+ Container labo-postgres Waiting 
+ Container labo-mongo Healthy 
+ Container labo-postgres Healthy 
+ Container labo-sante-ingestor-run-ce6212bde87c Creating 
+ Container labo-sante-ingestor-run-ce6212bde87c Created 
+============================================================
+ PIPELINE LABO-SANT├ë ΓÇö Session 2
+============================================================
+
+[1/2] Ingestion PostgreSQL...
+[PG] target: 100 m├⌐decins, 5000 patients, 60000 prescriptions
+[PG] r├⌐f├⌐rentiels OK en 3.07s -> medecins=100, patients=5000, medicaments=20
+[PG] prescriptions OK en 27.15s -> +12000 ins├⌐r├⌐es (total=60000, lignes_medic=24044)
+[PG] DONE en 30.24s
+
+[2/2] Ingestion MongoDB...
+[MG] target: 60000 consultations (pour 5000 patients ├ù 100 m├⌐decins)
+[MG] index pr├¬ts en 0.21s
+[MG] DONE: +60000 consultations en 13.72s (4373 docs/s) - total collection = 60001
+
+============================================================
+ PIPELINE TERMIN├ë en 44.39s
+============================================================

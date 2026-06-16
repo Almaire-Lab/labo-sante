@@ -1,0 +1,7 @@
+NAME                                   CPU %     MEM USAGE / LIMIT     NET I/O           BLOCK I/O
+labo-sante-ingestor-run-614a9a58d918   26.54%    56.04MiB / 7.669GiB   15.1MB / 85MB     0B / 0B
+labo-mongo                             0.55%     497.8MiB / 7.669GiB   296MB / 202kB     287kB / 285MB
+labo-pgadmin                           0.03%     300.2MiB / 7.669GiB   3kB / 126B        114MB / 8.19kB
+labo-mongo-express                     0.00%     46.75MiB / 7.669GiB   45.5kB / 15.6kB   61.1MB / 0B
+labo-postgres                          74.37%    197MiB / 7.669GiB     155MB / 26.9MB    25.1MB / 2.05GB
+labo-portainer                         0.00%     19.58MiB / 7.669GiB   17.5kB / 54.8kB   73.1MB / 344kB
