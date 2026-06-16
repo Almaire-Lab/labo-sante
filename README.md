@@ -3,8 +3,8 @@
 > **TP Data Architecture for AI — MSc 2025-2026**
 > Concevoir et déployer une architecture de données containerisée pour un projet IA.
 
-[![Session 1](https://img.shields.io/badge/Session%201-DONE-success)](#-avancement) [![Session 2](https://img.shields.io/badge/Session%202-TODO-lightgrey)](#-avancement) [![Session 3](https://img.shields.io/badge/Session%203-TODO-lightgrey)](#-avancement)
-[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-blue?logo=postgresql)](https://www.postgresql.org/) [![MongoDB](https://img.shields.io/badge/MongoDB-7-green?logo=mongodb)](https://www.mongodb.com/) [![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker)](https://docs.docker.com/compose/)
+[![Session 1](https://img.shields.io/badge/Session%201-DONE-success)](#session-1) [![Session 2](https://img.shields.io/badge/Session%202-DONE-success)](#session-2) [![Session 3](https://img.shields.io/badge/Session%203-DONE-success)](#session-3)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-blue?logo=postgresql)](https://www.postgresql.org/) [![MongoDB](https://img.shields.io/badge/MongoDB-7-green?logo=mongodb)](https://www.mongodb.com/) [![Python](https://img.shields.io/badge/Python-3.12-blue?logo=python)](https://www.python.org/) [![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker)](https://docs.docker.com/compose/)
 
 ---
 
@@ -13,7 +13,7 @@
 Un **laboratoire de santé fictif** souhaite centraliser ses données médicales aujourd'hui éclatées dans plusieurs fichiers et logiciels métier. Le projet construit une plateforme :
 
 - **fiable** — intégrité référentielle, persistance entre redémarrages
-- **scalable** — capable d'ingérer plusieurs millions de consultations
+- **scalable** — capable d'ingérer plusieurs millions de consultations (testé jusqu'à 6 M)
 - **administrable** — UIs web pour explorer les données
 - **observable** — monitoring temps réel des services
 - **portable** — tout est containerisé, déployable en une commande
@@ -24,233 +24,186 @@ Un **laboratoire de santé fictif** souhaite centraliser ses données médicales
 
 | Brique | Choix | Pourquoi |
 |---|---|---|
-| Données structurées | **PostgreSQL 15** | schéma stable (médecins, patients, médicaments, prescriptions), jointures, intégrité forte |
-| Données semi-structurées | **MongoDB 7** | consultations à structure variable (symptômes, diagnostics), pas de jointures complexes |
-| UI Postgres | **pgAdmin 4** | exploration et requêtes ad-hoc |
+| Données structurées | **PostgreSQL 15** | schéma stable, jointures, intégrité forte |
+| Données semi-structurées | **MongoDB 7** | consultations à structure variable |
+| UI Postgres | **pgAdmin 4** | exploration ad-hoc |
 | UI Mongo | **Mongo Express** | navigation collections |
 | Monitoring Docker | **Portainer CE** | dashboard conteneurs, logs, métriques |
+| Pipeline d'ingestion | **Python 3.12 · psycopg2 · pymongo · faker** | génération + ingestion bulk |
 | Orchestration | **Docker Compose** | reproductibilité, isolation réseau |
-| Pipeline (Session 2) | **Python · psycopg2 · pymongo** | ingestion paramétrable, mesure de volumétrie |
 
 ## 🗂️ Structure du dépôt
 
 ```
 labo-sante/
-├── README.md                       ← ce fichier (suivi du projet)
-├── docker-compose.yml              ← 5 services (postgres, mongo, pgadmin, mongo-express, portainer)
-├── .env.example                    ← variables à recopier dans .env (jamais commité)
+├── README.md                       ← ce fichier
+├── docker-compose.yml              ← 6 services
+├── .env.example
 ├── .gitignore
+├── app/                            ← Session 2 : pipeline d'ingestion
+│   ├── Dockerfile
+│   ├── requirements.txt
+│   ├── generate_data.py            ← données synthétiques (faker)
+│   ├── ingest_postgres.py          ← bulk insert via execute_values
+│   ├── ingest_mongo.py             ← bulk insert via insert_many
+│   ├── run_all.py                  ← pipeline Postgres → Mongo
+│   └── README.md
 ├── sql/
-│   ├── schema.sql                  ← DDL Postgres auto-exécuté au 1er démarrage
+│   ├── schema.sql                  ← DDL auto-exécutée au 1er démarrage
 │   └── dbdiagram.dbml              ← source dbdiagram.io
 ├── mongo/
-│   └── consultation-schema.json    ← schéma logique d'un document `consultation` + justification NoSQL
+│   └── consultation-schema.json    ← schéma logique du document
 └── docs/
-    ├── cahier-des-charges.md       ← contexte, besoins fonctionnels & techniques, critères d'acceptation
-    ├── architecture.md             ← diagramme Mermaid des services
-    ├── schema.png                  ← export PNG du schéma SQL (dbdiagram.io)
-    ├── schema.pdf                  ← export PDF
-    └── schema.svg                  ← export SVG vectoriel
+    ├── cahier-des-charges.md
+    ├── architecture.md
+    ├── schema.png / .pdf / .svg    ← exports dbdiagram.io
+    ├── livrable-session1.pdf       ← livrable Session 1
+    ├── livrable-final.pdf          ← livrable final (sessions 1+2+3)
+    ├── cours-labo-sante.pdf        ← cours pédagogique complet
+    ├── benchmarks/                 ← logs des tests 60k / 600k / 6M
+    └── screenshots/                ← captures pgAdmin, Mongo Express, Portainer
 ```
 
 ## 📊 Avancement
 
 | Session | Thème | Statut | Livrables |
 |:---:|---|:---:|---|
-| **1** | Modélisation & premiers conteneurs | ✅ **DONE** | cahier des charges, schémas SQL/NoSQL, diagramme services, stack démarre |
-| **2** | Docker Compose & pipeline d'ingestion | ⏳ TODO | `docker-compose.yml` complet, Dockerfile Python, scripts d'ingestion, tests volumétrie (60k / 600k / 6M) |
-| **3** | Monitoring, qualité, soutenance | ⏳ TODO | captures Portainer, `docker stats`, livrable final consolidé |
+| **1** | Modélisation & premiers conteneurs | ✅ **DONE** | cahier des charges, schémas SQL/NoSQL, diagramme services, stack validée |
+| **2** | Docker Compose & pipeline d'ingestion | ✅ **DONE** | `docker-compose.yml` complet (6 services), `app/` (Dockerfile + scripts), tests 60k/600k/6M |
+| **3** | Monitoring, qualité, soutenance | ✅ **DONE** | captures Portainer pendant ingestion, `docker stats`, livrable final |
 
 ---
 
-## ✅ Session 1 — Détail des livrables
+## <a name="session-1"></a>✅ Session 1 — Modélisation & infra
 
-### 1. Cahier des charges → [`docs/cahier-des-charges.md`](./docs/cahier-des-charges.md)
+### Livrables
 
-Décrit :
+- 📄 **Cahier des charges** → [`docs/cahier-des-charges.md`](./docs/cahier-des-charges.md)
+- 📐 **Schéma SQL** → [`sql/schema.sql`](./sql/schema.sql) + [`sql/dbdiagram.dbml`](./sql/dbdiagram.dbml)
+  Export dbdiagram.io : 🔗 [Lien éditable](https://dbdiagram.io/d/Labo-Sante-Schema-SQL-6a27e6f88eb8ca4bfe863a2b)
+  ![Schéma SQL](./docs/schema.png)
+- 📦 **Schéma NoSQL** → [`mongo/consultation-schema.json`](./mongo/consultation-schema.json)
+- 🗺️ **Diagramme des services** → [`docs/architecture.md`](./docs/architecture.md)
+- 🐳 **Stack qui démarre** → [`docker-compose.yml`](./docker-compose.yml) + [`.env.example`](./.env.example)
 
-- le **contexte** (labo santé fictif, données aujourd'hui éclatées)
-- les **5 domaines de données** et leur stockage cible justifié
-- **6 besoins fonctionnels** (F1–F6) : enregistrement, prescriptions, consultations, ingestion masse, idempotence, monitoring
-- les **besoins techniques** (conteneurisation, persistance, réseau, secrets, ordonnancement, observabilité, reproductibilité)
-- le **périmètre** (inclus / hors périmètre)
-- les **critères d'acceptation** mesurables
+### Validation
+Voir [`docs/screenshots/`](./docs/screenshots/) — preuves d'exécution (pgAdmin, Mongo Express, Portainer).
 
-### 2. Schéma SQL → [`sql/schema.sql`](./sql/schema.sql) + [`sql/dbdiagram.dbml`](./sql/dbdiagram.dbml)
+---
 
-**5 tables** PostgreSQL :
+## <a name="session-2"></a>✅ Session 2 — Pipeline d'ingestion
 
-| Table | Rôle | Clés |
-|---|---|---|
-| `medecins` | référentiel praticiens | PK `id`, UNIQUE `email` |
-| `patients` | référentiel patients | PK `id`, UNIQUE `email`, CHECK `sexe IN ('M','F','X')` |
-| `medicaments` | référentiel médicaments | PK `id`, UNIQUE `(nom_commercial, dosage, forme)` |
-| `prescriptions` | actes de prescription | PK `id`, FK `patient_id`, FK `medecin_id` |
-| `prescription_medicaments` | liaison N-N | PK composite `(prescription_id, medicament_id)` |
+### Le 6ème service : `ingestor` (Python)
 
-**Contraintes** : FKs avec `ON DELETE RESTRICT` (sauf cascade sur la liaison N-N), `duree_jours > 0`, timestamps automatiques.
-**Index** : `patient_id`, `medecin_id`, `date_prescription`, `dci`.
-**Auto-exécution** : `schema.sql` est monté dans `/docker-entrypoint-initdb.d/` → DDL appliquée au tout premier `docker compose up`.
-
-#### 📐 Diagramme exporté depuis dbdiagram.io
-
-🔗 **Lien éditable** : https://dbdiagram.io/d/Labo-Sante-Schema-SQL-6a27e6f88eb8ca4bfe863a2b
-
-![Schéma SQL](./docs/schema.png)
-
-Exports disponibles : [PNG](./docs/schema.png) · [PDF](./docs/schema.pdf) · [SVG](./docs/schema.svg)
-
-### 3. Schéma NoSQL → [`mongo/consultation-schema.json`](./mongo/consultation-schema.json)
-
-Collection unique `consultations`. Exemple de document :
-
-```json
-{
-  "_id": "ObjectId(...)",
-  "patient_id": 1428,
-  "medecin_id": 12,
-  "date": "2026-06-09T09:30:00Z",
-  "symptoms": [
-    { "label": "toux sèche", "duree_jours": 10, "intensite": "moderee" },
-    { "label": "fièvre", "temperature_c": 38.4 }
-  ],
-  "diagnosis": {
-    "primary":   { "code_cim10": "J20.9", "label": "Bronchite aiguë" },
-    "secondary": [{ "code_cim10": "R05", "label": "Toux" }],
-    "severity":  "moderee",
-    "confidence": 0.82
-  },
-  "notes": "Auscultation : râles bronchiques bilatéraux."
-}
-```
-
-**Pourquoi NoSQL ici ?**
-
-- `symptoms` et `diagnosis` ont une **longueur et une structure variables** (impossible à modéliser proprement en SQL sans 5+ tables).
-- **Pas de jointure complexe** nécessaire sur ce document.
-- `patient_id` assure le **lien logique avec PostgreSQL** (jointure applicative côté ingestor / API).
-- Évolution facile du modèle : ajouter `examens_demandes`, `attachments`… **sans migration**.
-
-**Index recommandés** : `patient_id ASC`, `date DESC`, `diagnosis.primary.code_cim10 ASC`.
-
-### 4. Diagramme des services → [`docs/architecture.md`](./docs/architecture.md)
+Documentation détaillée → [`app/README.md`](./app/README.md)
 
 ```mermaid
 flowchart LR
-    U[👤 Utilisateur]
-    subgraph labnet["Réseau Docker : labnet"]
-        ING["ingestor<br/>Python · psycopg2 · pymongo<br/><i>Session 2</i>"]
-        PG[("postgres:15<br/>volume: pgdata")]
-        MG[("mongo:7<br/>volume: mongodata")]
-        PGA[pgadmin]
-        MEX[mongo-express]
-        PORT[portainer]
-    end
-    U -- :5050 --> PGA
-    U -- :8081 --> MEX
-    U -- :9000 --> PORT
-    PGA -- 5432 --> PG
-    MEX -- 27017 --> MG
-    ING -- 5432 --> PG
-    ING -- 27017 --> MG
+    ING[ingestor<br/>Python · faker · psycopg2 · pymongo]
+    PG[(postgres)]
+    MG[(mongo)]
+    ING -- INSERT bulk<br/>execute_values --> PG
+    ING -- insert_many<br/>ordered=false --> MG
 ```
 
-**5 services** dans un réseau Docker isolé (`labnet`), communication par **nom de service** (`postgres`, `mongo`…). Volumes nommés (`pgdata`, `mongodata`, `pgadmin`, `portainer`) pour la persistance.
+### Démarrer une ingestion
 
-| Service | Image | Port hôte | Healthcheck |
-|---|---|---|---|
-| postgres | `postgres:15-alpine` | 127.0.0.1:**5432** | `pg_isready` |
-| mongo | `mongo:7` | 127.0.0.1:**27017** | `db.adminCommand('ping')` |
-| pgadmin | `dpage/pgadmin4` | 127.0.0.1:**5050** | dépend de postgres `healthy` |
-| mongo-express | `mongo-express:1` | 127.0.0.1:**8081** | dépend de mongo `healthy` |
-| portainer | `portainer/portainer-ce` | 127.0.0.1:**9000** | — |
+```bash
+# Démarrer la stack si pas déjà fait
+docker compose up -d
 
-### 5. Stack qui démarre → [`docker-compose.yml`](./docker-compose.yml) + [`.env.example`](./.env.example)
+# Lancer une ingestion (60k par défaut)
+docker compose --profile ingest run --rm ingestor
 
-- Aucun mot de passe en dur (variables `${VAR}` → `.env`)
-- Ports admin exposés **uniquement sur 127.0.0.1** (durcissement de base)
-- `depends_on: condition: service_healthy` pour les UIs
-- `.env` strictement exclu via `.gitignore`
+# Surcharger les volumes via variables d'env
+NB_PRESCRIPTIONS=600000 NB_CONSULTATIONS=600000 \
+docker compose --profile ingest run --rm ingestor
+```
+
+### 📈 Benchmarks (3 paliers)
+
+| Volume | Durée totale | Postgres | Mongo | Débit Mongo | Source |
+|---|---:|---:|---:|---:|---|
+| **60 000** | 44 s | 30 s | 14 s | 4 400 docs/s | [test-60k.log](./docs/benchmarks/test-60k.log) |
+| **600 000** | 93 s | 62 s | 31 s | 19 300 docs/s | [test-600k.log](./docs/benchmarks/test-600k.log) |
+| **6 000 000** | ~12-18 min | ~10 min | ~5 min | ~20 000 docs/s | [test-6M.log](./docs/benchmarks/test-6M.log) |
+
+**Observations** :
+- Mongo **scale linéairement** (~20k docs/s constant)
+- Postgres ralentit légèrement à grosse volumétrie (overhead transactions + FK checks + table de liaison N-N)
+- **Mémoire** : ingestor stable à ~55 MB ; Postgres monte à ~250 MB ; Mongo à ~500 MB ; jamais de swap
 
 ---
 
-## 🚀 Démarrer le projet
+## <a name="session-3"></a>✅ Session 3 — Monitoring & qualité
+
+### `docker stats` pendant ingestion 6M
+
+```
+NAME                CPU %   MEM USAGE          BLOCK I/O
+labo-sante-ingestor 25%     56 MiB             0 B / 0 B
+labo-postgres       75%     224 MiB            25 MB / 3.9 GB
+labo-mongo          0.5%    498 MiB            287 KB / 286 MB
+labo-pgadmin        0.03%   300 MiB            (idle)
+labo-mongo-express  0%      47 MiB             (idle)
+labo-portainer      0%      25 MiB             (monitoring)
+```
+
+→ voir [`docs/benchmarks/stats-pendant-ingestion.txt`](./docs/benchmarks/stats-pendant-ingestion.txt) et [`stats-6M-pendant.txt`](./docs/benchmarks/stats-6M-pendant.txt)
+
+### Portainer pendant ingestion
+
+![Portainer 6 containers](./docs/screenshots/07-portainer-ingestor-running.png)
+
+→ stack `labo-sante` : **6 conteneurs** (5 healthy/running permanents + 1 ingestor one-shot)
+
+### Livrable final consolidé
+
+📄 **[`docs/livrable-final.pdf`](./docs/livrable-final.pdf)** — un seul PDF qui couvre les 3 sessions avec :
+- Cahier des charges
+- Schémas SQL + NoSQL
+- Diagramme d'architecture
+- Extraits commentés du `docker-compose.yml`
+- Captures pgAdmin / Mongo Express / Portainer
+- Benchmarks 60k/600k/6M
+- Documentation d'utilisation
+
+---
+
+## 🚀 Démarrer le projet (de zéro)
 
 ```bash
-# 1. Cloner
 git clone https://github.com/Almaire-Lab/labo-sante.git
 cd labo-sante
+cp .env.example .env             # éditer les mots de passe
+docker compose up -d             # 5 services UP, postgres + mongo healthy
+docker compose ps                # vérifier
 
-# 2. Configurer les secrets
-cp .env.example .env
-# (éditer .env et mettre de vrais mots de passe)
-
-# 3. Lancer la stack
-docker compose up -d
-
-# 4. Vérifier que tout est UP et healthy
-docker compose ps
+# Tester l'ingestion
+docker compose --profile ingest run --rm ingestor
 ```
 
 ### Accès aux UIs
 
-| Service | URL | Identifiants |
+| Service | URL | Login |
 |---|---|---|
 | pgAdmin | http://localhost:5050 | `PGADMIN_EMAIL` / `PGADMIN_PASSWORD` (`.env`) |
 | Mongo Express | http://localhost:8081 | `MEX_USER` / `MEX_PASSWORD` (`.env`) |
 | Portainer | http://localhost:9000 | à créer au 1er accès |
 
-### Vérifier le schéma SQL appliqué
+### Arrêter
 
 ```bash
-docker exec -it labo-postgres psql -U $POSTGRES_USER -d $POSTGRES_DB -c "\dt"
+docker compose down              # arrête, garde les volumes
+docker compose down -v           # ⚠ supprime aussi les volumes (perte de données)
 ```
-
-Doit lister : `medecins`, `patients`, `medicaments`, `prescriptions`, `prescription_medicaments`.
-
-### Connecter pgAdmin à Postgres
-
-Dans pgAdmin → *Add new server* :
-
-- **Name** : `labo`
-- **Host** : `postgres` ← nom du **service**, pas `localhost`
-- **Port** : `5432`
-- **User / Password** : valeurs du `.env`
-
-### Arrêt / nettoyage
-
-```bash
-docker compose down            # stoppe les conteneurs, GARDE les volumes
-docker compose down -v         # ⚠ supprime aussi les volumes (perte de données)
-```
-
----
-
-## 🗺️ Roadmap
-
-### Session 2 — Ingestion & volumétrie *(à venir)*
-
-- [ ] Service `ingestor` Python (Dockerfile + `requirements.txt`)
-- [ ] `app/generate_data.py` — générateur paramétrable (`--n` lignes)
-- [ ] `app/ingest_postgres.py` (psycopg2) — référentiels + prescriptions
-- [ ] `app/ingest_mongo.py` (pymongo) — consultations
-- [ ] Idempotence (upsert ou contrainte unique)
-- [ ] Tests : **60 000**, **600 000**, **6 000 000** lignes
-- [ ] Mesures : temps total, RAM, CPU
-- [ ] `app/README.md` avec résultats
-
-### Session 3 — Monitoring & soutenance *(à venir)*
-
-- [ ] Capture dashboard Portainer pendant ingestion
-- [ ] Sortie `docker stats` pendant ingestion (avant/pendant/après)
-- [ ] Compilation du **livrable final** (`docs/livrable-final.md`) :
-  cahier des charges + schémas + diagramme + extraits commentés du compose + captures + doc d'utilisation
 
 ---
 
 ## 👤 Auteur
 
 Aline Maire — MSc 2025-2026, module *Data Architecture for AI* (Matthieu).
+Repo : https://github.com/Almaire-Lab/labo-sante
 
 ## 📜 Licence
 
